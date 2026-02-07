@@ -57,6 +57,14 @@ type-check: ## Run mypy type checker
 	@echo "$(BLUE)Running mypy type checker...$(NC)"
 	@mypy custom_components/
 
+code-review: ## Run automated code review
+	@echo "$(BLUE)Running automated code review...$(NC)"
+	@python scripts/code_review.py
+
+code-review-json: ## Run code review with JSON output
+	@echo "$(BLUE)Running code review (JSON output)...$(NC)"
+	@python scripts/code_review.py --json
+
 pre-commit: ## Run pre-commit hooks on all files
 	@echo "$(BLUE)Running pre-commit hooks...$(NC)"
 	@pre-commit run --all-files

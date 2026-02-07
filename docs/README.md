@@ -7,6 +7,7 @@ This directory contains comprehensive implementation guides for developing Home 
 | Guide | Purpose | Audience |
 |-------|---------|----------|
 | [Quality Checklist](QUALITY_CHECKLIST.md) | Track progress toward Bronze→Platinum tiers | All developers |
+| [Code Review Examples](CODE_REVIEW_EXAMPLES.md) | Automated code review usage and patterns | All developers |
 | [HACS Integration](HACS_INTEGRATION.md) | Publish integration to HACS | Distribution planning |
 | [Security Best Practices](SECURITY_BEST_PRACTICES.md) | Secure credential and API handling | All developers |
 | [Migration Guide](MIGRATION_GUIDE.md) | Config entry version migrations | Maintenance |
@@ -21,6 +22,7 @@ This directory contains comprehensive implementation guides for developing Home 
 1. Start with [../README.md](../README.md) for quick start
 2. Review [QUALITY_CHECKLIST.md](QUALITY_CHECKLIST.md) to understand quality tiers
 3. Read [SECURITY_BEST_PRACTICES.md](SECURITY_BEST_PRACTICES.md) before implementing auth
+4. Learn about [CODE_REVIEW_EXAMPLES.md](CODE_REVIEW_EXAMPLES.md) for automated review
 
 **For Publishing:**
 1. Achieve at least Bronze tier (see [QUALITY_CHECKLIST.md](QUALITY_CHECKLIST.md))

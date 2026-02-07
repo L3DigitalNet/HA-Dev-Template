@@ -1,0 +1,217 @@
+---
+name: Code Review
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main, testing]
+
+jobs:
+  automated-review:
+    name: Automated Code Review
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Get full history for better diff analysis
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-review-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-review-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install homeassistant aiohttp voluptuous
+          pip install pytest pytest-asyncio pytest-homeassistant-custom-component pytest-cov
+          pip install ruff mypy
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            custom_components/**/*.py
+            custom_components/**/manifest.json
+            custom_components/**/strings.json
+            tests/**/*.py
+
+      - name: Run automated code review
+        id: review
+        run: |
+          echo "Running automated code review..."
+
+          # Run the review script
+          python scripts/code_review.py --json > review_result.json || true
+
+          # Save output for next step
+          cat review_result.json
+
+          # Check if there are blocking issues
+          BLOCKING_COUNT=$(python -c "import json; data=json.load(open('review_result.json')); print(len(data.get('blocking', [])))")
+          echo "blocking_count=$BLOCKING_COUNT" >> $GITHUB_OUTPUT
+
+          # Create a markdown summary
+          python scripts/format_review_comment.py review_result.json > review_comment.md || true
+
+      - name: Post review comment
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+
+            // Read review results
+            let reviewData;
+            try {
+              reviewData = JSON.parse(fs.readFileSync('review_result.json', 'utf8'));
+            } catch (error) {
+              console.log('Could not read review results');
+              return;
+            }
+
+            // Build comment body
+            let body = '## 🤖 Automated Code Review\n\n';
+
+            const blockingCount = reviewData.blocking?.length || 0;
+            const warningCount = reviewData.warnings?.length || 0;
+            const nitpickCount = reviewData.nitpicks?.length || 0;
+
+            // Overall assessment
+            if (blockingCount > 0) {
+              body += '**Overall**: 🚫 CHANGES REQUESTED\n\n';
+            } else if (warningCount > 0) {
+              body += '**Overall**: ⚠️ COMMENTS\n\n';
+            } else {
+              body += '**Overall**: ✅ APPROVED\n\n';
+            }
+
+            body += `**Quality Tier**: ${reviewData.quality_tier || 'Unknown'}\n`;
+            body += `**Test Coverage**: ${(reviewData.coverage || 0).toFixed(1)}%\n\n`;
+
+            // Blocking issues
+            if (blockingCount > 0) {
+              body += `### 🚫 Blocking Issues (${blockingCount})\n\n`;
+              body += 'These issues must be fixed before merging:\n\n';
+
+              reviewData.blocking.forEach((issue, idx) => {
+                body += `${idx + 1}. **${issue.title}**\n`;
+                body += `   - File: \`${issue.file}\`${issue.line ? ` (line ${issue.line})` : ''}\n`;
+                body += `   - Category: ${issue.category}\n`;
+                body += `   - ${issue.description}\n`;
+                if (issue.suggestion) {
+                  body += `   - **Suggestion**: ${issue.suggestion}\n`;
+                }
+                body += '\n';
+              });
+            }
+
+            // Warnings
+            if (warningCount > 0) {
+              body += `### ⚠️ Recommended Changes (${warningCount})\n\n`;
+
+              reviewData.warnings.forEach((issue, idx) => {
+                body += `${idx + 1}. **${issue.title}** - \`${issue.file}\`${issue.line ? ` (line ${issue.line})` : ''}\n`;
+                body += `   - ${issue.description}\n`;
+                if (issue.suggestion) {
+                  body += `   - **Suggestion**: ${issue.suggestion}\n`;
+                }
+                body += '\n';
+              });
+            }
+
+            // Nitpicks (collapsed)
+            if (nitpickCount > 0) {
+              body += '<details>\n';
+              body += `<summary>💡 Nitpicks (${nitpickCount}) - Optional improvements</summary>\n\n`;
+
+              reviewData.nitpicks.forEach((issue, idx) => {
+                body += `${idx + 1}. ${issue.title} - \`${issue.file}\`\n`;
+              });
+
+              body += '\n</details>\n\n';
+            }
+
+            // Summary
+            body += '---\n\n';
+            body += '### 📊 Summary\n\n';
+            body += `- **Total Issues**: ${blockingCount + warningCount + nitpickCount}\n`;
+            body += `- **Blocking**: ${blockingCount}\n`;
+            body += `- **Warnings**: ${warningCount}\n`;
+            body += `- **Nitpicks**: ${nitpickCount}\n\n`;
+
+            if (blockingCount === 0 && warningCount === 0) {
+              body += '✅ No issues found! Code looks good.\n\n';
+            }
+
+            body += '*This is an automated first-pass review. Human review is still required.*\n';
+            body += '*Review performed by: Code Review Assistant*\n';
+
+            // Post comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+
+            // Set review status
+            if (blockingCount > 0) {
+              await github.rest.pulls.createReview({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number,
+                event: 'REQUEST_CHANGES',
+                body: `Automated review found ${blockingCount} blocking issue(s) that must be resolved.`
+              });
+            } else if (warningCount > 0) {
+              await github.rest.pulls.createReview({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number,
+                event: 'COMMENT',
+                body: `Automated review found ${warningCount} warning(s) to consider.`
+              });
+            } else {
+              await github.rest.pulls.createReview({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number,
+                event: 'APPROVE',
+                body: 'Automated review passed! ✅'
+              });
+            }
+
+      - name: Upload review results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-review-results
+          path: |
+            review_result.json
+            coverage.json
+          retention-days: 30
+
+      - name: Check review status
+        if: steps.review.outputs.blocking_count > 0
+        run: |
+          echo "❌ Code review found blocking issues"
+          echo "Blocking issues: ${{ steps.review.outputs.blocking_count }}"
+          exit 1
