@@ -1,3 +1,4 @@
+---
 name: Code Review
 
 permissions:
@@ -14,7 +15,7 @@ jobs:
   automated-review:
     name: Automated Code Review
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -55,17 +56,17 @@ jobs:
         id: review
         run: |
           echo "Running automated code review..."
-          
+
           # Run the review script
           python scripts/code_review.py --json > review_result.json || true
-          
+
           # Save output for next step
           cat review_result.json
-          
+
           # Check if there are blocking issues
           BLOCKING_COUNT=$(python -c "import json; data=json.load(open('review_result.json')); print(len(data.get('blocking', [])))")
           echo "blocking_count=$BLOCKING_COUNT" >> $GITHUB_OUTPUT
-          
+
           # Create a markdown summary
           python scripts/format_review_comment.py review_result.json > review_comment.md || true
 
@@ -76,7 +77,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
-            
+
             // Read review results
             let reviewData;
             try {
@@ -85,14 +86,14 @@ jobs:
               console.log('Could not read review results');
               return;
             }
-            
+
             // Build comment body
             let body = '## 🤖 Automated Code Review\n\n';
-            
+
             const blockingCount = reviewData.blocking?.length || 0;
             const warningCount = reviewData.warnings?.length || 0;
             const nitpickCount = reviewData.nitpicks?.length || 0;
-            
+
             // Overall assessment
             if (blockingCount > 0) {
               body += '**Overall**: 🚫 CHANGES REQUESTED\n\n';
@@ -101,15 +102,15 @@ jobs:
             } else {
               body += '**Overall**: ✅ APPROVED\n\n';
             }
-            
+
             body += `**Quality Tier**: ${reviewData.quality_tier || 'Unknown'}\n`;
             body += `**Test Coverage**: ${(reviewData.coverage || 0).toFixed(1)}%\n\n`;
-            
+
             // Blocking issues
             if (blockingCount > 0) {
               body += `### 🚫 Blocking Issues (${blockingCount})\n\n`;
               body += 'These issues must be fixed before merging:\n\n';
-              
+
               reviewData.blocking.forEach((issue, idx) => {
                 body += `${idx + 1}. **${issue.title}**\n`;
                 body += `   - File: \`${issue.file}\`${issue.line ? ` (line ${issue.line})` : ''}\n`;
@@ -121,11 +122,11 @@ jobs:
                 body += '\n';
               });
             }
-            
+
             // Warnings
             if (warningCount > 0) {
               body += `### ⚠️ Recommended Changes (${warningCount})\n\n`;
-              
+
               reviewData.warnings.forEach((issue, idx) => {
                 body += `${idx + 1}. **${issue.title}** - \`${issue.file}\`${issue.line ? ` (line ${issue.line})` : ''}\n`;
                 body += `   - ${issue.description}\n`;
@@ -135,19 +136,19 @@ jobs:
                 body += '\n';
               });
             }
-            
+
             // Nitpicks (collapsed)
             if (nitpickCount > 0) {
               body += '<details>\n';
               body += `<summary>💡 Nitpicks (${nitpickCount}) - Optional improvements</summary>\n\n`;
-              
+
               reviewData.nitpicks.forEach((issue, idx) => {
                 body += `${idx + 1}. ${issue.title} - \`${issue.file}\`\n`;
               });
-              
+
               body += '\n</details>\n\n';
             }
-            
+
             // Summary
             body += '---\n\n';
             body += '### 📊 Summary\n\n';
@@ -155,14 +156,14 @@ jobs:
             body += `- **Blocking**: ${blockingCount}\n`;
             body += `- **Warnings**: ${warningCount}\n`;
             body += `- **Nitpicks**: ${nitpickCount}\n\n`;
-            
+
             if (blockingCount === 0 && warningCount === 0) {
               body += '✅ No issues found! Code looks good.\n\n';
             }
-            
+
             body += '*This is an automated first-pass review. Human review is still required.*\n';
             body += '*Review performed by: Code Review Assistant*\n';
-            
+
             // Post comment
             await github.rest.issues.createComment({
               owner: context.repo.owner,
@@ -170,7 +171,7 @@ jobs:
               issue_number: context.issue.number,
               body: body
             });
-            
+
             // Set review status
             if (blockingCount > 0) {
               await github.rest.pulls.createReview({
