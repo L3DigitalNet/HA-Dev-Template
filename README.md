@@ -8,6 +8,7 @@ A complete, production-ready template repository for developing Home Assistant c
 - ✅ **Home Assistant 2026.2.0** - Latest HA core
 - ✅ **Complete Testing Suite** - pytest with HA custom component support
 - ✅ **Code Quality Tools** - Ruff (linter/formatter), mypy (type checker)
+- ✅ **Automated Code Review** - Pre-reviews PRs for security, quality, and patterns
 - ✅ **Pre-commit Hooks** - Automated code quality checks
 - ✅ **VS Code Integration** - Optimized settings + debug configurations
 - ✅ **Complete Example Integration** - Working implementation with coordinator, config flow, entities
@@ -197,9 +198,36 @@ ruff format .
 # Type check
 mypy custom_components/
 
+# Run automated code review
+python scripts/code_review.py
+
 # All quality checks
 pre-commit run --all-files
 ```
+
+### Code Review
+
+This template includes an automated code review assistant that pre-reviews pull requests:
+
+```bash
+# Run locally on your changes
+python scripts/code_review.py
+
+# Review specific files
+python scripts/code_review.py --files custom_components/my_integration/*.py
+
+# Get JSON output
+python scripts/code_review.py --json
+```
+
+**On Pull Requests:**
+- 🔒 Detects security vulnerabilities
+- 📊 Enforces HA quality standards
+- 🧪 Checks test coverage
+- 📚 Validates documentation
+- ✅ Posts detailed review comments
+
+See [.github/AUTOMATION_GUIDE.md](.github/AUTOMATION_GUIDE.md#automated-code-review) for full details.
 
 ## Integration Quality Scale
 

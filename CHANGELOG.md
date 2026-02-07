@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Automated Code Review Assistant** - Pre-reviews pull requests for security, quality, and patterns:
+  - GitHub Actions workflow (`.github/workflows/code-review.yml`) runs on all PRs
+  - Python review script (`scripts/code_review.py`) with security vulnerability detection
+  - Agent specification (`resources/agents/code-review-assistant.md`)
+  - Security pattern detection: hardcoded credentials, SQL injection, command injection, eval() usage
+  - HA pattern validation: async/await compliance, DataUpdateCoordinator usage, entity patterns
+  - Test coverage analysis and reporting
+  - Three severity levels: Blocking (🚫), Recommended (⚠️), Nitpicks (💡)
+  - Posts detailed review comments on PRs with actionable feedback
+  - Makefile targets: `make code-review` and `make code-review-json`
+  - Documentation in AUTOMATION_GUIDE.md and README.md
 - Comprehensive `/docs/` directory with implementation guides:
   - `QUALITY_CHECKLIST.md` - Bronze → Platinum tier progress tracking
   - `HACS_INTEGRATION.md` - Complete HACS publishing workflow

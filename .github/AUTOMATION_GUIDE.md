@@ -5,6 +5,7 @@ This template includes comprehensive automation and tooling to ensure high-quali
 ## Table of Contents
 
 - [GitHub Actions CI/CD](#github-actions-cicd)
+- [Automated Code Review](#automated-code-review)
 - [VS Code Tasks](#vs-code-tasks)
 - [Makefile Commands](#makefile-commands)
 - [Pre-commit Hooks](#pre-commit-hooks)
@@ -87,6 +88,208 @@ python scripts/verify_environment.py
 3. Get the upload token
 4. Add as GitHub secret: `CODECOV_TOKEN`
 5. Coverage reports will be automatically uploaded
+
+---
+
+## Automated Code Review
+
+### Overview
+
+The code review workflow runs automatically on all pull requests to perform a comprehensive first-pass review before human reviewers see the code. This catches common issues, security vulnerabilities, and code quality problems early.
+
+**File:** `.github/workflows/code-review.yml`
+
+### Features
+
+#### 🔒 Security Scanning
+- Hardcoded credentials detection
+- SQL injection patterns
+- Command injection vulnerabilities
+- Unsafe eval() or pickle usage
+- Shell injection risks
+
+#### 📊 Code Quality Checks
+- Home Assistant pattern compliance
+- Async/await usage
+- Type hint completeness
+- Entity pattern validation
+- Config flow requirements
+
+#### 🧪 Test Coverage Analysis
+- Coverage percentage calculation
+- Insufficient coverage warnings
+- Test quality assessment
+
+#### 📚 Documentation Review
+- manifest.json completeness
+- strings.json validation
+- Required fields verification
+
+### Severity Levels
+
+The review categorizes issues into three levels:
+
+#### 🚫 Blocking Issues (Must Fix)
+- Security vulnerabilities
+- Blocking I/O in async functions
+- Missing unique IDs on entities
+- Hardcoded credentials
+- Critical bugs
+
+**Action:** PR is marked as "Changes Requested"
+
+#### ⚠️ Recommended Changes (Should Fix)
+- Missing error handling
+- Code duplication
+- Suboptimal patterns
+- Missing type hints
+- Test coverage gaps
+
+**Action:** PR is marked as "Comment"
+
+#### 💡 Nitpicks (Optional)
+- Style inconsistencies
+- Variable naming suggestions
+- Minor improvements
+
+**Action:** Listed in collapsed section
+
+### Review Output
+
+The automated review posts a detailed comment on the PR with:
+
+```markdown
+## 🤖 Automated Code Review
+
+**Overall**: ✅ APPROVED / ⚠️ COMMENTS / 🚫 CHANGES REQUESTED
+
+**Quality Tier**: Silver
+**Test Coverage**: 82.5%
+
+### 🚫 Blocking Issues (2)
+1. **Hardcoded Credential** - `api.py` (line 45)
+   - Hardcoded API key detected
+   - **Suggestion**: Store in config entry data
+
+2. **Blocking I/O in Async** - `sensor.py` (line 78)
+   - Using requests in async function
+   - **Suggestion**: Use aiohttp instead
+
+### ⚠️ Recommended Changes (3)
+1. **Missing Type Hint** - `coordinator.py` (line 34)
+   - Function has no return type
+   - **Suggestion**: Add type hints
+
+### 📊 Summary
+- **Total Issues**: 5
+- **Blocking**: 2
+- **Warnings**: 3
+- **Nitpicks**: 0
+
+---
+*This is an automated first-pass review. Human review is still required.*
+```
+
+### Workflow Trigger
+
+The review runs on:
+- **Pull request opened** - Initial review
+- **Pull request synchronized** - Re-review on new commits
+- **Pull request reopened** - Review again if reopened
+
+### Integration with CI
+
+The code review workflow:
+1. ✅ Runs **after** basic CI checks (lint, type-check, test)
+2. ✅ Posts review comment with findings
+3. ✅ Sets PR review status (APPROVE, COMMENT, or REQUEST_CHANGES)
+4. ✅ Uploads review results as artifacts (30-day retention)
+5. ✅ Blocks merge if blocking issues are found
+
+### Manual Review
+
+You can also run the review locally:
+
+```bash
+# Review all custom_components files
+python scripts/code_review.py
+
+# Review specific files
+python scripts/code_review.py --files custom_components/my_integration/*.py
+
+# Output as JSON
+python scripts/code_review.py --json > review.json
+```
+
+### Customization
+
+The review script can be extended by modifying:
+
+**Security Patterns**: `scripts/code_review.py`
+```python
+self.security_patterns = {
+    "hardcoded_key": re.compile(r'api[_-]?key\s*=\s*["\'][\w\-]+["\']'),
+    # Add more patterns...
+}
+```
+
+**Quality Checks**: Add new AST-based checks
+```python
+def _check_ast_patterns(self, file: Path, tree: ast.AST):
+    # Add custom pattern detection
+```
+
+### Best Practices
+
+#### For Contributors
+1. ✅ Review automated feedback before requesting human review
+2. ✅ Fix blocking issues first
+3. ✅ Consider warnings - they're usually right
+4. ✅ Use suggested code examples as guidance
+5. ✅ Ask questions if feedback is unclear
+
+#### For Maintainers
+1. ✅ Use automated review as a starting point
+2. ✅ Still perform thorough manual review
+3. ✅ Update review patterns based on common issues
+4. ✅ Add new checks for project-specific requirements
+5. ✅ Provide feedback to improve the automation
+
+### Limitations
+
+The automated review **cannot** assess:
+- ❌ Architecture and design decisions
+- ❌ Business logic correctness
+- ❌ User experience considerations
+- ❌ Performance at scale
+- ❌ Complex security scenarios requiring context
+
+**Human review is always required** for these aspects.
+
+### Troubleshooting
+
+**Review doesn't run:**
+```bash
+# Check workflow file syntax
+cat .github/workflows/code-review.yml
+
+# Check if workflow is enabled
+gh workflow list
+
+# Check workflow logs
+gh run list --workflow=code-review.yml
+```
+
+**False positives:**
+- Add comments explaining why pattern is safe
+- Update security patterns in code_review.py
+- Use `# noqa` comments sparingly (only when justified)
+
+**Missing checks:**
+- Review scripts/code_review.py
+- Add new patterns or AST checks
+- Test locally before committing
+- Document new checks in agent specification
 
 ---
 
