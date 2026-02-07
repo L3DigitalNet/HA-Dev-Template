@@ -45,7 +45,7 @@ This repository is a **template** for developing Home Assistant custom integrati
 
 ```bash
 # 1. Fork and clone the repository
-git clone https://github.com/yourusername/ha-template.git
+git clone https://github.com/L3DigitalNet/HA-Dev-Template.git
 cd ha-template
 
 # 2. Activate the virtual environment

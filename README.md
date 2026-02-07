@@ -341,4 +341,4 @@ This is a template repository. Fork it to create your own HA integration project
 
 - [Home Assistant Community](https://community.home-assistant.io/)
 - [HA Developer Docs](https://developers.home-assistant.io/)
-- [GitHub Issues](https://github.com/yourusername/ha-template/issues)
+- [GitHub Issues](https://github.com/L3DigitalNet/HA-Dev-Template/issues)
