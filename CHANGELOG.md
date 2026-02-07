@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Missing `__init__.py` in `custom_components/` package
 - VS Code launch.json debug configurations (removed conflicting `purpose` property)
 - Environment verification script to skip venv check in CI environments
+- Repository structure: removed duplicate integration code files from agent directory
 
 ## [1.0.0] - 2026-02-07
 
