@@ -32,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Reorganized documentation structure with new `/docs/` directory
 - Enhanced `README.md` with links to new documentation
+- Updated `README.md` repository structure to reflect all current files and directories
+- Enhanced `README.md` features list to highlight documentation, CI/CD, and debug configs
 - Updated `CLAUDE.md` with references to new implementation guides
 - Updated `REFERENCE_GUIDE.md` with cross-references to new guides
 - Updated `.github/pull_request_template.md` with CHANGELOG requirement
