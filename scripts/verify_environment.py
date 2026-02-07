@@ -97,7 +97,7 @@ def check_command_available(command: str) -> bool:
             version = result.stdout.strip().split("\n")[0]
             print_success(f"{command} available ({version})")
             return True
-    except FileNotFoundError, subprocess.TimeoutExpired:
+    except (FileNotFoundError, subprocess.TimeoutExpired):
         pass
 
     print_error(f"{command} - not available")
