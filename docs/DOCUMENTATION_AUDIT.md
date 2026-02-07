@@ -71,7 +71,7 @@ ISSUES DETAILS
 ### 1. Python Version References
 
 **What it checks:**
-- Scans all `.md` files for Python version references (e.g., "Python 3.14.2")
+- Scans all `.md` files for Python version references (e.g., "Python 3.12.3")
 - Compares documented versions against the actual Python version
 
 **Why it matters:**
@@ -285,8 +285,8 @@ See `coordinator.py` for details
 
 **Version drift:**
 ```markdown
-# Documentation says Python 3.14.2
-# But system has Python 3.12.3
+# Documentation says one version
+# But system has different version
 ```
 
 **Fix:** Update all version references to match reality.
