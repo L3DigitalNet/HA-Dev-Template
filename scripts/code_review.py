@@ -106,7 +106,7 @@ class CodeReviewer:
                 re.IGNORECASE,
             ),
             "sql_injection": re.compile(
-                r'(?:execute|executemany|query)\s*\(\s*["\'].*?\{|\%',
+                r'(?:cursor\.execute|executemany|db\.query)\s*\(\s*[fF]?["\'].*?(?:\{|%s)',
                 re.IGNORECASE,
             ),
             "eval_usage": re.compile(r"\beval\s*\("),
