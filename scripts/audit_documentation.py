@@ -21,13 +21,11 @@ from __future__ import annotations
 import argparse
 import ast
 import json
-import os
 import re
 import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
 
 
 @dataclass
@@ -184,7 +182,7 @@ class DocumentationAuditor:
                             suggestion=f"Update to Python {actual_version}",
                         )
 
-    def check_package_version_references(self) -> None:
+    def check_package_version_references(self) -> None:  # noqa: C901
         """Check package version references against actual installed versions."""
         if self.verbose:
             print("  Checking package version references...")
@@ -233,7 +231,7 @@ class DocumentationAuditor:
                     except Exception:
                         pass
 
-    def check_file_directory_references(self) -> None:
+    def check_file_directory_references(self) -> None:  # noqa: C901
         """Check that file and directory references in docs actually exist."""
         if self.verbose:
             print("  Checking file and directory references...")
@@ -326,7 +324,7 @@ class DocumentationAuditor:
                         file=str(manifest_path.relative_to(self.repo_root)),
                         line=None,
                         description=f"Domain '{domain}' doesn't match directory name '{manifest_path.parent.name}'",
-                        suggestion=f"Ensure domain and directory name match",
+                        suggestion="Ensure domain and directory name match",
                     )
 
                 # Check for required fields
