@@ -1,13 +1,13 @@
 {
   "domain": "example_integration",
   "name": "Example Integration",
-  "codeowners": ["@L3Digital-Net"],
+  "codeowners": ["@L3DigitalNet"],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://github.com/L3Digital-Net/HA-Dev-Template",
+  "documentation": "https://github.com/L3DigitalNet/HA-Dev-Template",
   "integration_type": "device",
   "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/L3Digital-Net/HA-Dev-Template/issues",
+  "issue_tracker": "https://github.com/L3DigitalNet/HA-Dev-Template/issues",
   "requirements": [],
   "version": "0.1.0"
 }

@@ -346,4 +346,4 @@ This template is provided as-is for creating Home Assistant custom integrations.
 
 - [Home Assistant Community](https://community.home-assistant.io/)
 - [HA Developer Docs](https://developers.home-assistant.io/)
-- [GitHub Issues](https://github.com/L3Digital-Net/HA-Dev-Template/issues)
+- [GitHub Issues](https://github.com/L3DigitalNet/HA-Dev-Template/issues)
